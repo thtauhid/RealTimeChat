@@ -11,7 +11,22 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // Run when client connects
 io.on('connection', (socket) => {
-	console.log(`New websocket connection`)
+	// Welcoming current user
+	socket.emit('message', 'Welcome to RealTimeChat')
+
+	// Broadcast when a user connects
+	socket.broadcast.emit('message', 'A user has joined the chat.')
+
+	// When client disconnects
+	socket.on('disconnect', () => {
+		io.emit('message', 'A user has left the chat.')
+	})
+
+	// Listen to chatMessage
+	socket.on('chatMessage', (msg) => {
+		io.emit('message', msg)
+		// console.log(msg)
+	})
 })
 
 const PORT = process.env.PORT || 9000
