@@ -1,8 +1,14 @@
 const socket = io()
 
+// Join room
+socket.emit('joinRoom', {
+	username,
+	room
+})
 // Loggin into console
 socket.on('message', (msg) => {
 	console.log(msg)
+	console.log(username, room)
 	outputMessage(msg)
 
 	// Scroll down
@@ -10,6 +16,10 @@ socket.on('message', (msg) => {
 	chatMessages.scrollTop = chatMessages.scrollHeight
 })
 
+// Get username & room
+const { username, room } = Qs.parse(location.search, {
+	ignoreQueryPrefix : true
+})
 //Message Submit
 const ChatForm = document.getElementById('chat-form')
 ChatForm.addEventListener('submit', (e) => {

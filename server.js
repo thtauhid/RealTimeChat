@@ -4,6 +4,8 @@ const express = require('express')
 const socketio = require('socket.io')
 
 const formatMessgae = require('./utils/messages')
+const { userJoin, getCurrentUser } = require('./utils/users')
+
 const botName = 'Chat Bot'
 
 const app = express()
@@ -14,21 +16,27 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // Run when client connects
 io.on('connection', (socket) => {
-	// Welcoming current user
-	socket.emit('message', formatMessgae(botName, 'Welcome to RealTimeChat'))
+	// Join Room
+	socket.on('joinRoom', ({ username, room }) => {
+		const user = userJoin(socket.id, username, room)
 
-	// Broadcast when a user connects
-	socket.broadcast.emit('message', formatMessgae(botName, 'A user has joined the chat.'))
+		socket.join(user.room)
+		// Welcoming current user
+		socket.emit('message', formatMessgae(botName, 'Welcome to RealTimeChat'))
 
-	// When client disconnects
-	socket.on('disconnect', () => {
-		io.emit('message', formatMessgae(botName, 'A user has left the chat.'))
+		// Broadcast when a user connects
+		socket.broadcast.to(user.room).emit('message', formatMessgae(botName, `tht has joined the chat.`))
 	})
 
 	// Listen to chatMessage
 	socket.on('chatMessage', (msg) => {
-		io.emit('message', formatMessgae('User', msg))
+		io.emit('message', formatMessgae(username, msg))
 		// console.log(msg)
+	})
+
+	// When client disconnects
+	socket.on('disconnect', () => {
+		io.emit('message', formatMessgae(botName, 'A user has left the chat.'))
 	})
 })
 
